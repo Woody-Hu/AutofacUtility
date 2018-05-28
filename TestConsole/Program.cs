@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Autofac.Features.AttributeFilters;
 using System;
 using System.Reflection;
 
@@ -8,12 +9,13 @@ namespace TestConsole
     {
         static void Main(string[] args)
         {
-          
 
 
         }
 
        
     }
+
+
 
 }

@@ -11,6 +11,11 @@ namespace AutofacUtility
     public class ComponentAttribute:Attribute
     {
         /// <summary>
+        /// 使用的名称
+        /// </summary>
+        public string Name { set; get; }
+
+        /// <summary>
         /// 是否以类型注册
         /// </summary>
         public bool IfByClass { set; get; }

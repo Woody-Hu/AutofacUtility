@@ -8,5 +8,6 @@ namespace AutofacUtility
     [AttributeUsage(AttributeTargets.Property,AllowMultiple = false,Inherited = false)]
     public class DenpencyAttribute:Attribute
     {
+        public string Name { set; get; }
     }
 }
