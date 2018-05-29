@@ -5,19 +5,18 @@ using System.Text;
 namespace AutofacUtility
 {
     /// <summary>
-    /// Bean特性
+    /// 名称类型特性接口
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class BeanAttribute:Attribute, INameAndCalssAttribute
+    interface INameAndCalssAttribute
     {
         /// <summary>
         /// 是否以类型注册
         /// </summary>
-        public bool IfByClass { set; get; }
+       bool IfByClass { set; get; }
 
         /// <summary>
         /// 名称
         /// </summary>
-        public string Name { set; get; }
+      string Name { set; get; }
     }
 }

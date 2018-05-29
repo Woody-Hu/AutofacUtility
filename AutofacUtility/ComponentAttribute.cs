@@ -8,7 +8,7 @@ namespace AutofacUtility
     /// 元素特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Class,AllowMultiple = false, Inherited = false)]
-    public class ComponentAttribute:Attribute
+    public class ComponentAttribute:Attribute, INameAndCalssAttribute
     {
         /// <summary>
         /// 使用的名称

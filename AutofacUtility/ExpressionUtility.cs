@@ -71,7 +71,6 @@ namespace AutofacUtility
         private static MethodInfo m_useResolveByKeyMethod; 
         #endregion
 
-
         /// <summary>
         /// 静态构造
         /// </summary>
@@ -160,7 +159,9 @@ namespace AutofacUtility
         /// <param name="lstExpression"></param>
         /// <param name="tempMethodExpression"></param>
         /// <param name="tempExpressionOfReslove"></param>
-        private static void PrepareProperty(Dictionary<PropertyInfo, DenpencyAttribute> dicOfProperty, ref DenpencyAttribute tempAttribute, UnaryExpression realUseInstance, MemberExpression useContext, List<Expression> lstExpression, ref MethodCallExpression tempMethodExpression, ref MethodCallExpression tempExpressionOfReslove)
+        private static void PrepareProperty(Dictionary<PropertyInfo, DenpencyAttribute> dicOfProperty, ref DenpencyAttribute tempAttribute,
+            UnaryExpression realUseInstance, MemberExpression useContext, List<Expression> lstExpression, 
+            ref MethodCallExpression tempMethodExpression, ref MethodCallExpression tempExpressionOfReslove)
         {
             //获取属性
             foreach (var onePropertyKVP in dicOfProperty)
@@ -181,6 +182,7 @@ namespace AutofacUtility
                 {
                     //解析结果
                     tempExpressionOfReslove = Expression.Call(m_useResolveMethod, useContext, tempExpressionOfType);
+
                 }
                 else
                 {
@@ -192,7 +194,7 @@ namespace AutofacUtility
                 }
 
                 //属性回设
-                tempMethodExpression = Expression.Call(realUseInstance, tempProperty.SetMethod, tempExpressionOfReslove);
+                tempMethodExpression = Expression.Call(realUseInstance, tempProperty.SetMethod, Expression.TypeAs(tempExpressionOfReslove,tempProperty.PropertyType));
 
                 //设置表达式体
                 lstExpression.Add(tempMethodExpression);
