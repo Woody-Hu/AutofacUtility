@@ -182,6 +182,14 @@ namespace AutofacUtility
                 //key过滤
                 tempBuilder.WithAttributeFiltering();
 
+                //获取激活后事件方法
+                var tempAction = ExpressionUtility.GetActivedAction(oneType);
+
+                if (null != tempAction)
+                {
+                    //绑定解析方法
+                    tempBuilder.OnActivated(tempAction);
+                }
 
             }
         }
