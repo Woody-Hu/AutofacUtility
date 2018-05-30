@@ -5,7 +5,9 @@ using System.Text;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Extensions.DependencyInjection;
+using Autofac.Extras.DynamicProxy;
 using Autofac.Features.AttributeFilters;
+using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AutofacUtility
@@ -45,6 +47,21 @@ namespace AutofacUtility
         /// Bean特性
         /// </summary>
         private Type m_useBeanType = typeof(BeanAttribute);
+
+        /// <summary>
+        /// 使用的拦截器基类
+        /// </summary>
+        private Type m_useBaseInterceptor = typeof(BaseInterceptor);
+
+        /// <summary>
+        /// 使用的Aop特性类
+        /// </summary>
+        private Type m_useBaseInterceptorCreaterType = typeof(IInterceptorCreater);
+
+        /// <summary>
+        /// 使用的默认代理拦截设置
+        /// </summary>
+        private ProxyGenerationOptions m_useDefaultProxyOptions = new ProxyGenerationOptions(new DefaultProxyGenerationHook());
 
         #endregion
 
@@ -142,6 +159,15 @@ namespace AutofacUtility
         }
 
         /// <summary>
+        /// 准备基础类拦截器
+        /// </summary>
+        private void PrepareBaseInterceptor()
+        {
+            //注册基础AOP拦截器
+            m_containerBuilder.RegisterType<BaseInterceptor>();
+        }
+
+        /// <summary>
         /// 准备一个程序集
         /// </summary>
         /// <param name="inputAssembly"></param>
@@ -236,6 +262,16 @@ namespace AutofacUtility
                     tempBuilder = tempBuilder.SingleInstance();
                 }
 
+                //若类需要拦截
+                if (IfTypeUseInterceptor(oneType))
+                {
+                    //设置类型拦截
+                    tempBuilder.EnableClassInterceptors(m_useDefaultProxyOptions).InterceptedBy(m_useBaseInterceptor);
+                }
+                
+
+                tempBuilder.EnableClassInterceptors().InterceptedBy(typeof(BaseInterceptor));
+
                 tempBuilder = PrepareCalssAndName(oneType, tempComponentAttribute, tempBuilder);
 
                 //key过滤
@@ -251,6 +287,33 @@ namespace AutofacUtility
                 }
 
             }
+        }
+
+        /// <summary>
+        /// 判断类是否拦截
+        /// </summary>
+        /// <param name="inputType"></param>
+        /// <returns></returns>
+        private bool IfTypeUseInterceptor(Type inputType)
+        {
+            foreach (var oneMethod in inputType.GetMethods(BindingFlags.Instance|BindingFlags.Public))
+            {
+                if ( !oneMethod.IsVirtual)
+                {
+                    continue;
+                }
+
+                //获得方法aop特性
+                var methodAttributes = oneMethod.GetCustomAttributes(m_useBaseInterceptorCreaterType,false);
+
+                if (methodAttributes.Length != 0)
+                {
+                    return true;
+                }
+               
+            }
+
+            return false;
         }
 
         /// <summary>
