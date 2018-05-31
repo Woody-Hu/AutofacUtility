@@ -13,7 +13,7 @@ namespace AutofacUtility
         /// <summary>
         /// 拦截器创造器类型
         /// </summary>
-        private static Type m_useAttributeInterfaceType = typeof(IInterceptorCreater);
+        private static Type m_useAttributeInterfaceType = typeof(AbstractInterceptorAttribute);
 
         /// <summary>
         /// 拦截器方法
@@ -27,7 +27,7 @@ namespace AutofacUtility
             List<IInvocationInterceptor> tempLst = new List<IInvocationInterceptor>();
 
             //获取拦截方法的特性表
-            foreach (IInterceptorCreater oneCreater in tempMethod.GetCustomAttributes(m_useAttributeInterfaceType,false))
+            foreach (AbstractInterceptorAttribute oneCreater in tempMethod.GetCustomAttributes(m_useAttributeInterfaceType,false))
             {
                 //获得拦截器
                 var tempInterceptor = oneCreater.CreatInterceptor();

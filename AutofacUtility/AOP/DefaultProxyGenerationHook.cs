@@ -14,7 +14,7 @@ namespace AutofacUtility
         /// <summary>
         /// 使用的创造器类型
         /// </summary>
-        private static Type m_useCreaterType = typeof(IInterceptorCreater);
+        private static Type m_useCreaterType = typeof(AbstractInterceptorAttribute);
 
         public void MethodsInspected()
         {

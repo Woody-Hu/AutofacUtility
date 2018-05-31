@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Autofac;
@@ -56,7 +57,7 @@ namespace AutofacUtility
         /// <summary>
         /// 使用的Aop特性类
         /// </summary>
-        private Type m_useBaseInterceptorCreaterType = typeof(IInterceptorCreater);
+        private Type m_useBaseInterceptorCreaterType = typeof(AbstractInterceptorAttribute);
 
         /// <summary>
         /// 使用的默认代理拦截设置
@@ -147,6 +148,8 @@ namespace AutofacUtility
         /// </summary>
         private void PrepareData()
         {
+            //准备拦截器基类
+            PrepareBaseInterceptor();
             //获取应用程序域中的程序集实例
             var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -164,7 +167,7 @@ namespace AutofacUtility
         private void PrepareBaseInterceptor()
         {
             //注册基础AOP拦截器
-            m_containerBuilder.RegisterType<BaseInterceptor>();
+            m_containerBuilder.Register(c => new BaseInterceptor());
         }
 
         /// <summary>
@@ -255,28 +258,18 @@ namespace AutofacUtility
                 ComponentAttribute tempComponentAttribute = oneType.GetCustomAttribute(m_useCompentType) as ComponentAttribute;
 
                 var tempBuilder = m_containerBuilder.RegisterType(oneType);
-
+              
+               
                 //若是单例模式
                 if (tempComponentAttribute.IfSingelton)
                 {
                     tempBuilder = tempBuilder.SingleInstance();
                 }
 
-                //若类需要拦截
-                if (IfTypeUseInterceptor(oneType))
-                {
-                    //设置类型拦截
-                    tempBuilder.EnableClassInterceptors(m_useDefaultProxyOptions).InterceptedBy(m_useBaseInterceptor);
-                }
-                
-
-                tempBuilder.EnableClassInterceptors().InterceptedBy(typeof(BaseInterceptor));
 
                 tempBuilder = PrepareCalssAndName(oneType, tempComponentAttribute, tempBuilder);
 
-                //key过滤
-                tempBuilder.WithAttributeFiltering();
-
+                
                 //获取激活后事件方法
                 var tempAction = ExpressionUtility.GetActivedAction(oneType);
 
@@ -286,6 +279,20 @@ namespace AutofacUtility
                     tempBuilder.OnActivated(tempAction);
                 }
 
+                //若类需要拦截
+                if (IfTypeUseInterceptor(oneType))
+                {
+                    //设置类型拦截
+                    tempBuilder.EnableClassInterceptors(m_useDefaultProxyOptions).InterceptedBy(m_useBaseInterceptor);
+
+                }
+                else
+                {
+                    //key过滤
+                    tempBuilder.WithAttributeFiltering();
+                }
+
+                
             }
         }
 
@@ -331,7 +338,7 @@ namespace AutofacUtility
             //类型注册/接口注册
             if (tempAttribute.IfByClass)
             {
-                tempBuilder = tempBuilder.AsSelf();
+                tempBuilder = tempBuilder.As(oneType);
             }
             else
             {

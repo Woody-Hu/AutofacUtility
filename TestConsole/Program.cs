@@ -17,109 +17,49 @@ namespace TestConsole
     {
         static void Main(string[] args)
         {
-            //var tempApp = AutofacApplication.GetApplication();
+            var tempApp = AutofacApplication.GetApplication();
 
-            //using (var tempContext = tempApp.GetContainer().BeginLifetimeScope())
-            //{
-            //    var tempB = tempContext.Resolve<B>();
-            //    var tempC = tempContext.Resolve<C>();
-            //}
-
-            //ProxyGenerator generator = new ProxyGenerator();
-
-            //var builder = new ContainerBuilder();
-            //builder.RegisterType<A1>()
-            //       .EnableClassInterceptors()
-            //       .InterceptedBy(typeof(TempInterceptor));
-
-            var testPacker = new TestPacker(new List<ITestInterceptor>() { new TempInterceptor1(), new TempInterceptor2() }, new CoreHanlder());
-
-            testPacker.Process();
+            using (var tempContext = tempApp.GetContainer().BeginLifetimeScope())
+            {
+                var tempA = tempContext.Resolve<IA>();
+                var tempB = tempContext.Resolve<B>();
+                tempB.TestMehtod();
+                //var tempC = tempContext.Resolve<C>();
+            }
 
             Console.Read();
+
+
         }
     }
 
-    public interface ITestPacker
+    public class UseInterceptorAttribute : AbstractInterceptorAttribute
     {
-        void Process();
-    }
-
-    public class CoreHanlder
-    {
-        public void CoreMethod()
+        public override IInvocationInterceptor CreatInterceptor()
         {
-            Console.WriteLine("Core");
+            return new UseInvocationInterceptor();
         }
     }
 
-    public interface ITestInterceptor
+    public class UseInvocationInterceptor : IInvocationInterceptor
     {
-        void Intercept(ITestPacker inputPacker);
-    }
-
-    public class TempInterceptor1 : ITestInterceptor
-    {
-        public void Intercept(ITestPacker invocation)
+        public void Interceptor(IInvocationContext inputContext)
         {
-            Console.WriteLine("1 start");
-            invocation.Process();
-            Console.WriteLine("1 end");
+            Console.WriteLine("aa");
+
+            inputContext.Proceed();
+
+            Console.WriteLine("aa");
 
         }
     }
-
-
-    public class TempInterceptor2 : ITestInterceptor
-    {
-        public void Intercept(ITestPacker invocation)
-        {
-            Console.WriteLine("2 start");
-            invocation.Process();
-            Console.WriteLine("2 end");
-
-        }
-    }
-
-
-    public class TestPacker : ITestPacker
-    {
-        private List<ITestInterceptor> m_lstInterceptor;
-
-        private CoreHanlder m_Hanlder;
-
-        private List<ITestInterceptor>.Enumerator m_useenumerator;
-
-        public TestPacker(List<ITestInterceptor> lstInputInterceptor, CoreHanlder inputHanlder)
-        {
-            m_lstInterceptor = lstInputInterceptor;
-
-            m_Hanlder = inputHanlder;
-
-            m_useenumerator = m_lstInterceptor.GetEnumerator();
-        }
-
-        public void Process()
-        {
-            if (m_useenumerator.MoveNext())
-            {
-                m_useenumerator.Current.Intercept(this);
-            }
-            else
-            {
-                m_Hanlder.CoreMethod();
-            }
-        }
-    }
-
-
 
 
 
     public interface IA
     { }
 
-    [Component(Name = "A",IfByClass = false)]
+    [Component(Name = "A", IfByClass = false)]
     public class A1 : IA
     { }
 
@@ -127,23 +67,33 @@ namespace TestConsole
     public class A2:IA
     { }
 
+    public interface ITest
+    {
+        [UseInterceptor]
+        void TestMehtod();
+    }
+
     [Component(IfByClass = true)]
     public class B
     {
+        [Denpency(Name = "A")]
+        public IA UseA { set; get; }
+
         IA m_useA;
 
+        //如果AOP的话构造注入用不了
         public B([KeyFilter("A")] IA inputA)
         {
             m_useA = inputA;
         }
+
+        [UseInterceptor]
+        public virtual void TestMehtod()
+        {
+            Console.WriteLine("Core");
+        }
     }
 
-    [Component(IfByClass = true)]
-    public class C
-    {
-       [Denpency(Name = "B")]
-       public IA UseA { set; get; }
-    }
 
 
 }
