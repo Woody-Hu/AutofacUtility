@@ -87,7 +87,17 @@ namespace AutofacUtility
             //放置上层服务
             m_containerBuilder.Populate(services);
             PrepareData();
-        } 
+        }
+
+        /// <summary>
+        /// Moduel形式的注册
+        /// </summary>
+        /// <param name="builder"></param>
+        private AutofacApplication(ContainerBuilder builder)
+        {
+            m_containerBuilder = builder;
+            PrepareData();
+        }
         #endregion
 
         /// <summary>
@@ -115,6 +125,16 @@ namespace AutofacUtility
             }
 
             return m_singleTag;
+        }
+
+        /// <summary>
+        /// 获取临时Application
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static AutofacApplication PrepareApplication(ContainerBuilder builder)
+        {
+            return new AutofacApplication(builder);
         }
 
         /// <summary>
