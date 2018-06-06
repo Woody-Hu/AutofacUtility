@@ -41,6 +41,14 @@ namespace TestConsole
         }
     }
 
+    public class UseInterceptor2Attribute : AbstractInterceptorAttribute
+    {
+        public override IInvocationInterceptor CreatInterceptor()
+        {
+            return new UseInvocationInterceptor2();
+        }
+    }
+
     public class UseInvocationInterceptor : IInvocationInterceptor
     {
         public void Interceptor(IInvocationContext inputContext)
@@ -50,6 +58,19 @@ namespace TestConsole
             inputContext.Proceed();
 
             Console.WriteLine("aa");
+
+        }
+    }
+
+    public class UseInvocationInterceptor2 : IInvocationInterceptor
+    {
+        public void Interceptor(IInvocationContext inputContext)
+        {
+            Console.WriteLine("BB");
+
+            inputContext.Proceed();
+
+            Console.WriteLine("BB");
 
         }
     }
@@ -87,7 +108,7 @@ namespace TestConsole
             m_useA = inputA;
         }
 
-        [UseInterceptor]
+
         public virtual void TestMehtod()
         {
             Console.WriteLine("Core");
