@@ -23,6 +23,6 @@ namespace AutofacUtility
         /// <summary>
         /// 是否已单例形式注册
         /// </summary>
-        public bool IfSingelton { set; get; }
+        public LifeScopeKind LifeScope { set; get; } = LifeScopeKind.Transient;
     }
 }

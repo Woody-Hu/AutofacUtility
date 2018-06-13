@@ -279,11 +279,17 @@ namespace AutofacUtility
 
                 var tempBuilder = m_containerBuilder.RegisterType(oneType);
               
-               
-                //若是单例模式
-                if (tempComponentAttribute.IfSingelton)
+                //设置生命周期
+                switch (tempComponentAttribute.LifeScope)
                 {
-                    tempBuilder = tempBuilder.SingleInstance();
+                    case LifeScopeKind.Request:
+                        tempBuilder = tempBuilder.InstancePerRequest();
+                        break;
+                    case LifeScopeKind.Singleton:
+                        tempBuilder = tempBuilder.SingleInstance();
+                        break;
+                    default:
+                        break;
                 }
 
 
