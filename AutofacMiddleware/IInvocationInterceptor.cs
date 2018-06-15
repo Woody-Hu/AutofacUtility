@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AutofacUtility
+namespace AutofacMiddleware
 {
     /// <summary>
     /// 方法拦截器接口

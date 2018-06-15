@@ -1,4 +1,5 @@
-﻿using Castle.DynamicProxy;
+﻿using AutofacMiddleware;
+using Castle.DynamicProxy;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

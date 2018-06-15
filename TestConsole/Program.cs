@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extras.DynamicProxy;
 using Autofac.Features.AttributeFilters;
-
+using AutofacMiddleware;
 using AutofacUtility;
 using Castle.DynamicProxy;
 using System;

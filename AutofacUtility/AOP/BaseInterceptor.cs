@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AutofacMiddleware;
 using Castle.DynamicProxy;
 
 namespace AutofacUtility

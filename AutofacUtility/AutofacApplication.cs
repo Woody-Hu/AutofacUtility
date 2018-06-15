@@ -8,6 +8,7 @@ using Autofac.Builder;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using Autofac.Features.AttributeFilters;
+using AutofacMiddleware;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 

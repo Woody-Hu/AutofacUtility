@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace AutofacUtility
+namespace AutofacMiddleware
 {
     /// <summary>
     /// 使用的上下文仿写接口
