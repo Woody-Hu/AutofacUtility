@@ -169,6 +169,9 @@ namespace AutofacUtility
         /// </summary>
         private void PrepareData()
         {
+            //注册生成事件
+            m_containerBuilder.RegisterBuildCallback(k => GolbalAutofacContainer.UseContainer = k);
+
             //准备拦截器基类
             PrepareBaseInterceptor();
             //获取应用程序域中的程序集实例

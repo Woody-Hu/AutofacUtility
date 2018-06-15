@@ -1,4 +1,5 @@
 ﻿using AutofacMiddleware;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +13,7 @@ namespace AutofacAopImp
     {
         public override IInvocationInterceptor CreatInterceptor()
         {
+            
             return _EFCoreTransactionWithParamAttribute.UseInterceptor;
         }
 
