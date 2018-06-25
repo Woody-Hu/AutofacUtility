@@ -286,8 +286,9 @@ namespace AutofacUtility
                 //设置生命周期
                 switch (tempComponentAttribute.LifeScope)
                 {
+                    //在.net core Request 用 InstancePerLifetimeScope http://docs.autofac.org/en/latest/integration/aspnetcore.html
                     case LifeScopeKind.Request:
-                        tempBuilder = tempBuilder.InstancePerRequest();
+                        tempBuilder = tempBuilder.InstancePerLifetimeScope();
                         break;
                     case LifeScopeKind.Singleton:
                         tempBuilder = tempBuilder.SingleInstance();
