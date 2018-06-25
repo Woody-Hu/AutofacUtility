@@ -1,7 +1,9 @@
 ﻿using AutofacMiddleware;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
+using System.Threading.Tasks;
 
 namespace AutofacAopImp
 {
@@ -39,6 +41,8 @@ namespace AutofacAopImp
                 //执行
                 inputContext.Proceed();
 
+
+                AsyncMethod(useDbcontext).Wait();
                 //事务提交
                 tempTransaction.Commit();
             }
@@ -57,6 +61,16 @@ namespace AutofacAopImp
                 }
             }
 
+        }
+
+        /// <summary>
+        /// 内部NIO封装
+        /// </summary>
+        /// <param name="useDbContext"></param>
+        /// <returns></returns>
+        private static async Task AsyncMethod(DbContext useDbContext)
+        {
+            await useDbContext.SaveChangesAsync();
         }
     }
 }

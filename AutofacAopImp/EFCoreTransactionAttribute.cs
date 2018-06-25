@@ -6,9 +6,9 @@ using System.Text;
 namespace AutofacAopImp
 {
     /// <summary>
-    /// 非参数型EF事务特性
+    /// 非参数型EF事务特性 需注册HttpContextAccessor
     /// </summary>
-    public class EFCoreTransactionAttribute : AbstractInterceptorAttribute
+    public class EFCoreTransactionAttribute: AbstractInterceptorAttribute
     {
         private Type m_useType;
 

@@ -13,7 +13,6 @@ namespace AutofacAopImp
     {
         public override IInvocationInterceptor CreatInterceptor()
         {
-            
             return _EFCoreTransactionWithParamAttribute.UseInterceptor;
         }
 

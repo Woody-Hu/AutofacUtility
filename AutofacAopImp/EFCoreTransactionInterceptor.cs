@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using AutofacMiddleware;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -7,13 +8,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AutofacAopImp
 {
     /// <summary>
     /// 使用的参数无关EF事务拦截器
     /// </summary>
-    internal class EFCoreTransactionInterceptor : IInvocationInterceptor
+    internal class EFCoreTransactionInterceptor: IInvocationInterceptor
     {
         private Type useResloveType = null;
 
@@ -25,6 +27,7 @@ namespace AutofacAopImp
 
         public void Interceptor(IInvocationContext inputContext)
         {
+
             //获得全局Autofac应用
             var useAutofacContainer = GolbalAutofacContainer.UseContainer;
 
@@ -34,15 +37,26 @@ namespace AutofacAopImp
                 inputContext.Proceed();
             }
 
+            
+
             DbContext useDbContext = null;
 
             //打开临时声明空间
             using (var tempContext = useAutofacContainer.BeginLifetimeScope())
             {
+
+                //尝试解析服务若失败则直接执行
+                if (!(tempContext.Resolve(typeof(IHttpContextAccessor)) is IHttpContextAccessor useAccessor))
+                {
+                    inputContext.Proceed();
+                    //执行完返回
+                    return;
+                }
+
                 //尝试解析服务若失败则直接执行
                 try
                 {
-                    useDbContext = tempContext.Resolve(useResloveType) as DbContext;
+                    useDbContext = useAccessor.HttpContext.RequestServices.GetService(useResloveType) as DbContext;
                 }
                 catch (Exception)
                 {
@@ -66,6 +80,7 @@ namespace AutofacAopImp
                 {
                     tempTransaction = useDbContext.Database.BeginTransaction();
                     inputContext.Proceed();
+                    AsyncMethod(useDbContext).Wait();
                     tempTransaction.Commit();
                 }
                 //异常回滚
@@ -77,6 +92,16 @@ namespace AutofacAopImp
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 内部NIO封装
+        /// </summary>
+        /// <param name="useDbContext"></param>
+        /// <returns></returns>
+        private static async Task AsyncMethod(DbContext useDbContext)
+        {
+            await useDbContext.SaveChangesAsync();
         }
     }
 }
