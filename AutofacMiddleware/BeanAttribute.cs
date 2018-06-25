@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AutofacUtility
+namespace AutofacMiddleware
 {
     /// <summary>
     /// Bean特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class BeanAttribute:Attribute, INameAndCalssAttribute
+    public class BeanAttribute : Attribute, INameAndCalssAttribute
     {
         /// <summary>
         /// 是否以类型注册

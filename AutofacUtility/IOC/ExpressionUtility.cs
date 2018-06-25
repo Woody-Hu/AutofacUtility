@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Core;
+using AutofacMiddleware;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;

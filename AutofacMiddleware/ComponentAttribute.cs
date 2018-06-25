@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AutofacUtility
+namespace AutofacMiddleware
 {
     /// <summary>
     /// 元素特性
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class,AllowMultiple = false, Inherited = false)]
-    public class ComponentAttribute:Attribute, INameAndCalssAttribute
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class ComponentAttribute : Attribute, INameAndCalssAttribute
     {
         /// <summary>
         /// 使用的名称
