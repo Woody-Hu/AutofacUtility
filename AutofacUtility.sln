@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutofacMiddleware", "Autofa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutofacAopImp", "AutofacAopImp\AutofacAopImp.csproj", "{84F1D75B-D951-4625-8D55-ACB7E41FA9A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutofacMiddlewarePrepareImp", "AutofacMiddlewarePrepare\AutofacMiddlewarePrepareImp.csproj", "{B7BE1C1F-C8B3-4797-8604-33F3B1C56311}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutofacMiddlewarePrepareImp", "AutofacMiddlewarePrepare\AutofacMiddlewarePrepareImp.csproj", "{B7BE1C1F-C8B3-4797-8604-33F3B1C56311}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

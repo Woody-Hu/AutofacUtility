@@ -12,7 +12,7 @@ namespace AutofacMiddleware
         /// <summary>
         /// 瞬态
         /// </summary>
-        Transient,
+        Transient = 0,
         /// <summary>
         /// 请求
         /// </summary>

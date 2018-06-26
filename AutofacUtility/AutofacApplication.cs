@@ -280,51 +280,115 @@ namespace AutofacUtility
             if (null != oneType.GetCustomAttribute(m_useCompentType))
             {
                 ComponentAttribute tempComponentAttribute = oneType.GetCustomAttribute(m_useCompentType) as ComponentAttribute;
-
-                var tempBuilder = m_containerBuilder.RegisterType(oneType);
-              
-                //设置生命周期
-                switch (tempComponentAttribute.LifeScope)
+                if (oneType.IsGenericType)
                 {
-                    //在.net core Request 用 InstancePerLifetimeScope http://docs.autofac.org/en/latest/integration/aspnetcore.html
-                    case LifeScopeKind.Request:
-                        tempBuilder = tempBuilder.InstancePerLifetimeScope();
-                        break;
-                    case LifeScopeKind.Singleton:
-                        tempBuilder = tempBuilder.SingleInstance();
-                        break;
-                    default:
-                        break;
-                }
-
-
-                tempBuilder = PrepareCalssAndName(oneType, tempComponentAttribute, tempBuilder);
-
-                
-                //获取激活后事件方法
-                var tempAction = ExpressionUtility.GetActivedAction(oneType);
-
-                if (null != tempAction)
-                {
-                    //绑定解析方法
-                    tempBuilder.OnActivated(tempAction);
-                }
-
-                //若类需要拦截
-                if (IfTypeUseInterceptor(oneType))
-                {
-                    //设置类型拦截
-                    tempBuilder.EnableClassInterceptors(m_useDefaultProxyOptions).InterceptedBy(m_useBaseInterceptor);
-
+                    RegiestComponentByGeneric(oneType, tempComponentAttribute);
                 }
                 else
                 {
-                    //key过滤
-                    tempBuilder.WithAttributeFiltering();
+                    RegiestComponentByNoneGeneric(oneType, tempComponentAttribute);
                 }
 
-                
+
             }
+        }
+
+        /// <summary>
+        /// 非泛型注册Component
+        /// </summary>
+        /// <param name="oneType"></param>
+        /// <param name="tempComponentAttribute"></param>
+        private void RegiestComponentByNoneGeneric(Type oneType, ComponentAttribute tempComponentAttribute)
+        {
+            var tempBuilder = m_containerBuilder.RegisterType(oneType);
+
+            //设置生命周期
+            tempBuilder = SetLifeScope(tempComponentAttribute, tempBuilder);
+
+            tempBuilder = PrepareCalssAndName(oneType, tempComponentAttribute, tempBuilder);
+
+            //后续行为
+            ActionMethod(oneType, tempBuilder);
+        }
+
+        /// <summary>
+        /// 泛型注册一个Component
+        /// </summary>
+        /// <param name="inputType"></param>
+        /// <param name="tempComponentAttribute"></param>
+        private void RegiestComponentByGeneric(Type inputType, ComponentAttribute tempComponentAttribute)
+        {
+            var tempBuilder = m_containerBuilder.RegisterGeneric(inputType);
+
+            //设置生命周期
+            tempBuilder = SetLifeScope(tempComponentAttribute, tempBuilder);
+
+            tempBuilder = PrepareCalssAndName(inputType, tempComponentAttribute, tempBuilder);
+
+            //后续行为
+            ActionMethod(inputType, tempBuilder);
+        }
+
+        /// <summary>
+        /// 后续拦截行为
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="X"></typeparam>
+        /// <param name="inputType"></param>
+        /// <param name="tempBuilder"></param>
+        private void ActionMethod<T, X>(Type inputType, IRegistrationBuilder<object, T, X> tempBuilder)
+            where T : ReflectionActivatorData
+        {
+            //获取激活后事件方法
+            var tempAction = ExpressionUtility.GetActivedAction(inputType);
+
+            if (null != tempAction)
+            {
+                //绑定解析方法
+                tempBuilder.OnActivated(tempAction);
+            }
+
+            //key过滤
+            tempBuilder.WithAttributeFiltering();
+
+            //若类需要拦截
+            if (IfTypeUseInterceptor(inputType))
+            {
+                //设置类型拦截
+                tempBuilder.EnableInterfaceInterceptors(m_useDefaultProxyOptions).InterceptedBy(m_useBaseInterceptor);
+            }
+
+            //key过滤
+            tempBuilder.WithAttributeFiltering();
+        }
+
+        /// <summary>
+        /// 设置生命周期行为
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="X"></typeparam>
+        /// <param name="tempComponentAttribute"></param>
+        /// <param name="tempBuilder"></param>
+        /// <returns></returns>
+        private IRegistrationBuilder<object, T, X> SetLifeScope<T, X>
+            (ComponentAttribute tempComponentAttribute, IRegistrationBuilder<object, T, X> tempBuilder)
+            where T : ReflectionActivatorData
+        {
+            //设置生命周期
+            switch (tempComponentAttribute.LifeScope)
+            {
+                //在.net core Request 用 InstancePerLifetimeScope http://docs.autofac.org/en/latest/integration/aspnetcore.html
+                case LifeScopeKind.Request:
+                    tempBuilder = tempBuilder.InstancePerLifetimeScope();
+                    break;
+                case LifeScopeKind.Singleton:
+                    tempBuilder = tempBuilder.SingleInstance();
+                    break;
+                default:
+                    break;
+            }
+
+            return tempBuilder;
         }
 
         /// <summary>
@@ -334,22 +398,22 @@ namespace AutofacUtility
         /// <returns></returns>
         private bool IfTypeUseInterceptor(Type inputType)
         {
-            foreach (var oneMethod in inputType.GetMethods(BindingFlags.Instance|BindingFlags.Public))
+            foreach (var oneInterface in inputType.GetInterfaces())
             {
-                if ( !oneMethod.IsVirtual)
+                foreach (var oneMethod in oneInterface.GetMethods())
                 {
-                    continue;
-                }
 
-                //获得方法aop特性
-                var methodAttributes = oneMethod.GetCustomAttributes(m_useBaseInterceptorCreaterType,false);
+                    //获得方法aop特性
+                    var methodAttributes = oneMethod.GetCustomAttributes(m_useBaseInterceptorCreaterType, false);
 
-                if (methodAttributes.Length != 0)
-                {
-                    return true;
+                    if (methodAttributes.Length != 0)
+                    {
+                        return true;
+                    }
+
                 }
-               
             }
+            
 
             return false;
         }
@@ -374,6 +438,54 @@ namespace AutofacUtility
             else
             {
                 tempBuilder = tempBuilder.AsImplementedInterfaces();
+            }
+
+            //设置注册名称
+            if (!string.IsNullOrWhiteSpace(tempAttribute.Name))
+            {
+                //按类型注册
+                if (tempAttribute.IfByClass)
+                {
+                    tempBuilder = tempBuilder.Keyed(tempAttribute.Name, oneType);
+                }
+                //按接口注册
+                else
+                {
+                    foreach (var oneInterfaceType in oneType.GetInterfaces())
+                    {
+                        tempBuilder = tempBuilder.Keyed(tempAttribute.Name, oneInterfaceType);
+                    }
+                }
+            }
+
+            return tempBuilder;
+        }
+
+        /// <summary>
+        /// 泛型注册类型与名称
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="oneType"></param>
+        /// <param name="tempAttribute"></param>
+        /// <param name="tempBuilder"></param>
+        /// <returns></returns>
+        private IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> PrepareCalssAndName
+           (Type oneType, INameAndCalssAttribute tempAttribute, IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> tempBuilder)
+        {
+            //类型注册/接口注册
+            if (tempAttribute.IfByClass)
+            {
+                tempBuilder = tempBuilder.As(oneType);
+            }
+            else
+            {
+                foreach (var oneInterface in oneType.GetInterfaces())
+                {
+                    if (oneInterface.IsGenericType)
+                    {
+                        tempBuilder.As(oneInterface);
+                    }
+                }
             }
 
             //设置注册名称
