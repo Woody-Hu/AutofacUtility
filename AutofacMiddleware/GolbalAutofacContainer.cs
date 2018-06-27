@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -57,6 +58,35 @@ namespace AutofacMiddleware
                 }
                 
             }
+        }
+
+        /// <summary>
+        /// 获得当前的HttpContext
+        /// </summary>
+        /// <returns></returns>
+        public static HttpContext GetCurrentHttpContext()
+        {
+            //获得全局Autofac应用
+            var useAutofacContainer = GolbalAutofacContainer.UseContainer;
+
+            //判断是否可解析
+            if (null == useAutofacContainer)
+            {
+                return null;
+            }
+
+            IHttpContextAccessor tempHttpAccessor = null;
+
+            try
+            {
+                tempHttpAccessor = useAutofacContainer.Resolve(typeof(IHttpContextAccessor)) as IHttpContextAccessor;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            return tempHttpAccessor.HttpContext;
         }
     }
 }

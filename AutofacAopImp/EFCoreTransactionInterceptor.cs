@@ -28,68 +28,61 @@ namespace AutofacAopImp
         public void Interceptor(IInvocationContext inputContext)
         {
 
-            //获得全局Autofac应用
-            var useAutofacContainer = GolbalAutofacContainer.UseContainer;
+            //获得当前HttpContext
+            var tempHttpContext = GolbalAutofacContainer.GetCurrentHttpContext();
 
             //判断是否可解析
-            if (null == useAutofacContainer || null == useResloveType)
+            if (null == tempHttpContext || null == useResloveType)
             {
                 inputContext.Proceed();
             }
 
-            
 
             DbContext useDbContext = null;
 
-            //打开临时声明空间
-            using (var tempContext = useAutofacContainer.BeginLifetimeScope())
+
+            //尝试解析服务若失败则直接执行
+            try
             {
+                useDbContext = tempHttpContext.RequestServices.GetService(useResloveType) as DbContext;
+            }
+            catch (Exception)
+            {
+                inputContext.Proceed();
+                //执行完返回
+                return;
+            }
 
-                //尝试解析服务若失败则直接执行
-                if (!(tempContext.Resolve(typeof(IHttpContextAccessor)) is IHttpContextAccessor useAccessor))
+            //若获取会话失败
+            if (null == useDbContext)
+            {
+                inputContext.Proceed();
+                //执行完返回
+                return;
+            }
+
+            IDbContextTransaction tempTransaction = null;
+
+            //尝试打开事务并提交
+            try
+            {
+                tempTransaction = useDbContext.Database.BeginTransaction();
+                inputContext.Proceed();
+                AsyncMethod(useDbContext).Wait();
+                tempTransaction.Commit();
+            }
+            //异常回滚
+            catch (Exception)
+            {
+                if (null != tempTransaction)
                 {
-                    inputContext.Proceed();
-                    //执行完返回
-                    return;
+                    tempTransaction.Rollback();
                 }
 
-                //尝试解析服务若失败则直接执行
-                try
+                //若返回值是bool类型的
+                if (inputContext.ReturnValue.GetType() == typeof(bool))
                 {
-                    useDbContext = useAccessor.HttpContext.RequestServices.GetService(useResloveType) as DbContext;
-                }
-                catch (Exception)
-                {
-                    inputContext.Proceed();
-                    //执行完返回
-                    return;
-                }
-
-                //若会话失败
-                if (null == useDbContext)
-                {
-                    inputContext.Proceed();
-                    //执行完返回
-                    return;
-                }
-
-                IDbContextTransaction tempTransaction = null;
-
-                //尝试打开事务并提交
-                try
-                {
-                    tempTransaction = useDbContext.Database.BeginTransaction();
-                    inputContext.Proceed();
-                    AsyncMethod(useDbContext).Wait();
-                    tempTransaction.Commit();
-                }
-                //异常回滚
-                catch (Exception)
-                {
-                    if (null != tempTransaction)
-                    {
-                        tempTransaction.Rollback();
-                    }
+                    inputContext.ReturnValue = false;
                 }
             }
         }
