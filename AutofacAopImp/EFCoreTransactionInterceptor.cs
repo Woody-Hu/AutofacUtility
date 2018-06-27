@@ -19,6 +19,10 @@ namespace AutofacAopImp
     {
         private Type useResloveType = null;
 
+        private static Type m_useBoolType = typeof(bool);
+
+        private static Type m_useObjectType = typeof(object);
+
         internal EFCoreTransactionInterceptor(Type inputType)
         {
             useResloveType = inputType;
@@ -80,9 +84,14 @@ namespace AutofacAopImp
                 }
 
                 //若返回值是bool类型的
-                if (inputContext.ReturnValue.GetType() == typeof(bool))
+                if (inputContext.Method.ReturnType == m_useBoolType)
                 {
                     inputContext.ReturnValue = false;
+                }
+                //若返回值是Object类型的
+                else if (m_useObjectType.IsAssignableFrom(inputContext.Method.ReturnType))
+                {
+                    inputContext.ReturnValue = null;
                 }
             }
         }
