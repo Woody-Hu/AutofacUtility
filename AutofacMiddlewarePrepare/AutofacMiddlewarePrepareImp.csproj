@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.8.1" />
     <PackageReference Include="Fusonic.AspNetCore.Http" Version="1.0.0" />
   </ItemGroup>
 
